@@ -5,6 +5,7 @@
 #include <iostream>
 #include <set>
 #include <tuple>
+#include <utility>
 #include <vector> 
 
 
@@ -49,24 +50,23 @@ auto ex5(uint32_t n) -> decltype(n) {
 }
 
 void ex6(int a, int b, int c){
-    int d = (b * b) - (4 * a * c);
-    if (d < 0)
-    {
+    if (int d = (b * b) - (4 * a * c) < 0) {
         std::cout<<"no roots\n";
         return;
     }
-    if (d == 0)
-    {
+    else if (d == 0) {
         std::cout<<(-b/(2*a))<<"\n";
         return;
     }
+    else{
     std::cout<<((-b + sqrt(d))/(2*a))<<" "<<((-b - sqrt(d))/(2*a))<<"\n";
+    }
 }
 
 void ex7(std::tm d) {
     std::cout<<"jeeeemeiwk\n";
     std::string m;
-    switch (d.tm_mon)
+    switch (auto month = d.tm_mon)
     {
     case 0:
         m = "January";
@@ -106,7 +106,6 @@ void ex7(std::tm d) {
         break;
     }
     std::cout<<d.tm_mday<<" "<<m<<" "<<d.tm_year<<"\n";
-
 }
 
 
@@ -121,6 +120,9 @@ public:
     Person(std::string fname, std::string sname, int birth_year);
     Person();
     friend bool operator<(Person const& lhs, Person const& rhs);
+    friend bool operator>(Person const& lhs, Person const& rhs);
+    friend bool operator==(Person const& lhs, Person const& rhs);
+
     friend std::ostream& operator<<(std::ostream& os, const Person& p);
 };
 Person:: Person(std::string fname, std::string sname, int birth_year)
@@ -135,6 +137,16 @@ Person:: Person()
 
 bool operator<(Person const& lhs, Person const& rhs) {
   return std::tie(lhs.fname_, lhs.sname_, lhs.birth_year_) <
+         std::tie(rhs.fname_, rhs.sname_, rhs.birth_year_);
+}
+
+bool operator>(Person const& lhs, Person const& rhs) {
+  return std::tie(lhs.fname_, lhs.sname_, lhs.birth_year_) >
+         std::tie(rhs.fname_, rhs.sname_, rhs.birth_year_);
+}
+
+bool operator==(Person const& lhs, Person const& rhs) {
+  return std::tie(lhs.fname_, lhs.sname_, lhs.birth_year_) ==
          std::tie(rhs.fname_, rhs.sname_, rhs.birth_year_);
 }
 
@@ -159,31 +171,45 @@ std::vector<int>::iterator bin_search(int v_size, const std::vector<int>::iterat
     // }
     // return bin_search(v_size/2, beg, mid, value);
         // auto ans = 5 <= > 3;
-
+    std::cout<<*mid<<" mid \n";
     if (value == *mid)
     {
         return mid;
     }
     if (value > *mid)
     {
-        return bin_search(v_size/2, mid, end, value);
+        return bin_search(v_size/2, mid+1, end, value);
     }
-    return bin_search(v_size/2, beg, mid, value);
+    return bin_search(v_size/2, beg, mid-1, value);
 }
 
 
-std::tuple<std::vector<int>::iterator, std::vector<int>::iterator> find_beg_end_iters(std::vector<int>::iterator found, std::vector<int>::iterator v_begin, std::vector<int>::iterator v_end)
+std::pair<std::vector<int>::iterator, std::vector<int>::iterator> find_beg_end_iters(std::vector<int>::iterator found, std::vector<int>::iterator v_begin, std::vector<int>::iterator v_end)
 {
-    auto v = *found;
-    auto beg = found;
-    auto end = found;
-    std::cout<<v<<"\n";
-    while (*beg == v && beg != v_begin) beg--;
-    while (*end == v && end != v_end) end++;
-    return std::make_tuple(++beg, --end);
+    int v = *found;
+    std::vector<int>::iterator beg = found;
+    std::vector<int>::iterator end = found;
+    std::cout<<v<<" si \n";
+    while (*beg == v && std::prev(beg) == found && beg != v_begin) {
+        beg = std::prev(beg);
+        std::cout<<*beg<<" hah\n";
+    }
+    while (*end == v && *(std::next(end)) == v && end != v_end) {
+        end = std::next(end);
+        std::cout<<*end<<" hah2\n";
+    
+    }
+    // if (*beg != v) {
+    //     beg = std::prev(beg);
+    // }
+    // if (*end != v) {
+    //     end = std::next(end);
+    // }
+    std::cout<<*beg<<" "<<v<<" "<<*end<<" ??\n";
+    return std::make_pair(beg, end);
 }
 
-std::tuple<std::vector<int>::iterator, std::vector<int>::iterator> ex9(std::vector<int> v, int value)
+std::pair<std::vector<int>::iterator, std::vector<int>::iterator> ex9(std::vector<int> v, int value)
 {
     return find_beg_end_iters(bin_search(v.size(), v.begin(), v.end(), value), v.begin(), v.end());
 }
@@ -231,7 +257,11 @@ int main(){
     }
     std::cout<<"\n";
     std::vector<int> v1 {1, 1, 2, 2, 2, 3, 3, 4, 4, 7, 7, 8, 9, 9};
-    // auto res = bin_search(v1.size(), v1.begin(), v1.end(), 7);
-    auto [b, e] = ex9(v1, 4);
-    std::cout<<*b<<" "<<*e<<"\n";
+    auto res = bin_search(v1.size(), v1.begin(), v1.end(), 1);
+    std::cout<<*res<<" <- bin search\n";
+    // auto [b, e] = ex9(v1, 4);
+    // std::cout<<*b<<" "<<*e<<"\n";
+    auto [b1, e1] = ex9(v1, 7);
+
+    std::cout<<*b1<<" "<<*e1<<" out\n";
 }
