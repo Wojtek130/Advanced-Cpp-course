@@ -37,7 +37,7 @@ void ex4(std::string msg, Names n) {
     std::cout<<msg<<" You have "<<a<<" apples."<<"\n";
 }
 
-auto ex5(uint32_t n) -> decltype(n) {
+auto ex5(uint32_t n) {
     if (n == 0)
     {
         return 2;
