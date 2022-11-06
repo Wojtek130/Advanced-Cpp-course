@@ -108,7 +108,7 @@ bool operator==(const alpaca& lhs, const alpaca& rhs)
 class herd
 {
 private:
-    vector<alpaca> herd_;
+    vector<shared_ptr<alpaca>> herd_;
 public:
     herd(/* args */);
     ~herd();
@@ -132,7 +132,7 @@ herd::~herd()
 
 void herd::buy_alpaca(string name, sex sex){
     alpaca a = alpaca(name, sex, nullptr, nullptr);
-    herd_.push_back(a);
+    herd_.push_back(make_shared<alpaca>(std::move(a)));
 }
 
 void herd::born_in_herd(string name, sex sex, string mother_name){
@@ -140,28 +140,25 @@ void herd::born_in_herd(string name, sex sex, string mother_name){
     alpaca na = alpaca(name, sex, mother);
     shared_ptr<alpaca> naptr = make_shared<alpaca>(std::move(na));
     mother->children_.push_back(naptr);
-    herd_.push_back(na);
+    herd_.push_back(naptr);
 }
 
 void herd::born_in_herd(string name, sex sex, string mother_name, string father_name){
     shared_ptr<alpaca> mother = this->find_parent(mother_name, sex::female);
     shared_ptr<alpaca> father = this->find_parent(father_name, sex::male);
-    mother->name_ = "changed";
     alpaca na = alpaca(name, sex, mother, father);
     shared_ptr<alpaca> naptr = make_shared<alpaca>(std::move(na));
     mother->children_.push_back(naptr);
     father->children_.push_back(naptr);
-
-
-    herd_.push_back(na);
+    herd_.push_back(naptr);
 }
 
 shared_ptr<alpaca> herd::find_parent(string name, sex sex) {
     bool found = false;
     shared_ptr<alpaca> parent;
-    for (alpaca a : herd_) {
-        if (a.name_ == name && a.sex_ == sex) {
-            parent = make_shared<alpaca>(move(a));
+    for (auto a : herd_) {
+        if (a->name_ == name && a->sex_ == sex) {
+            parent = a;
             found = true;
             break;
         }
@@ -176,9 +173,9 @@ shared_ptr<alpaca> herd::find_parent(string name, sex sex) {
 void herd::died(string name) {
     bool found = false;
     shared_ptr<alpaca> alpc;
-    for (alpaca a : herd_) {
-        if (a.name_ == name) {
-            alpc = make_shared<alpaca>(std::move(a));
+    for (auto a : herd_) {
+        if (a->name_ == name) {
+            alpc = a;
             found = true;
             break;
         }
@@ -188,7 +185,17 @@ void herd::died(string name) {
         throw invalid_argument( "Alpaca with the given name does not exist in the herd" );
     }
     alpaca::used_names_.erase(std::find(alpaca::used_names_.begin(),alpaca::used_names_.end(), name));
-    herd_.erase(std::find(herd_.begin(), herd_.end(), *alpc));
+    // herd_.erase(std::find(herd_.begin(), herd_.end(), *alpc));
+    int ind = 0;
+    for (long unsigned int i = 0; i < herd_.size(); i++)
+    {
+        if (herd_[i]->name_ == name)
+        {
+            ind = i;
+        }
+        
+    }
+    herd_.erase(herd_.begin() + ind);
     alpc.reset();
     // delete alpc;
 }
@@ -196,16 +203,17 @@ void herd::died(string name) {
 shared_ptr<alpaca> herd::get_alpaca(string name) {
     bool found = false;
     shared_ptr<alpaca> alpc;
-    for (alpaca a : herd_) {
-        if (a.name_ == name) {
-            alpc = make_shared<alpaca>(std::move(a));
+    for (auto a : herd_) {
+        cout<<"hejj"<<"\n";
+        if ((*a).name_ == name) {
+            alpc = a;
             found = true;
             break;
         }
     }
     if (!found)
     {
-        throw invalid_argument( "Alpaca with the given name does not exist in the herd" );
+        throw invalid_argument( "aaAlpaca with the given name does not exist in the herd" );
     }
     return alpc;
 }
@@ -214,7 +222,7 @@ shared_ptr<alpaca> herd::get_alpaca(string name) {
 ostream &operator<<(std::ostream &os, const herd &h) {
     os<<"Herd{\n";
     for (const auto & a : h.herd_) {
-        os<<"\t"<<a;
+        os<<"\t"<<*a;
     }
     os<<"}\n";
     return os;
@@ -235,20 +243,26 @@ int main(){
     h.buy_alpaca("john", sex::male);
     h.born_in_herd("jack", sex::male, "emma");
     h.born_in_herd("george", sex::male, "emma", "john");
+    cout<<h;
+
     auto emma = h.get_alpaca("emma");
     cout<<emma->name_<<endl;
     cout<<emma->children_.size()<<endl;
     for (const auto &p : emma->children_) {
-        cout<<"jell";
         if(auto tmp = p.lock())
-            cout << "weak1 value is " << *tmp << '\n';
+            cout << "weak value is " << *tmp;
         else
-            cout << "weak1 is expired\n";
+            cout << "weak is expired\n";
     }
-    // h.died("george");
-
+    h.died("george");
     cout<<h;
-    cout<<*(h.get_alpaca("george")->father_)<<endl;
+    for (const auto &p : emma->children_) {
+        if(auto tmp = p.lock())
+            cout << "weak value is " << *tmp;
+        else
+            cout << "weak is expired\n";
+    }
+    // cout<<*(h.get_alpaca("george")->father_)<<endl;
 
     // alpaca a3 = alpaca("mark", sex::male, make_shared<alpaca>(a1), make_shared<alpaca>(a2));
     // a3.smother(make_shared<alpaca>(a1));
