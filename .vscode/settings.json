@@ -43,6 +43,9 @@
     "xutility": "cpp",
     "fstream": "cpp",
     "ratio": "cpp",
-    "chrono": "cpp"
+    "chrono": "cpp",
+    "functional": "cpp",
+    "list": "cpp",
+    "xhash": "cpp"
   }
 }
