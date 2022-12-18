@@ -46,6 +46,12 @@
     "chrono": "cpp",
     "functional": "cpp",
     "list": "cpp",
-    "xhash": "cpp"
+    "xhash": "cpp",
+    "queue": "cpp",
+    "stack": "cpp",
+    "deque": "cpp",
+    "numeric": "cpp",
+    "unordered_map": "cpp",
+    "random": "cpp"
   }
 }
