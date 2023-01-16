@@ -2,7 +2,7 @@ CC=g++
 # CFLAGS=-std=c++2a -Wall -Wextra -trigraphs
 CFLAGS=-std=c++2a -Wall -Wextra
 NAME = a.exe
-PN = ex4.cpp
+PN = ex5.cpp
 PNO = ex.o
 
 $(NAME): $(PNO)
